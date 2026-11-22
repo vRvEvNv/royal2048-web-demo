@@ -5,8 +5,10 @@ This demo has no advertising or in-app purchases.
 
 The landscape interface keeps the original portrait board in the center. Mode,
 score and countdown appear on the left; Home, Music and Sound remain on the
-right. The home screen centers a cropped castle garden behind the logo and stacked
-New Game / Back to Game buttons. The eight-mode selection grid adapts to wide screens.
+right. The home screen uses separate logo art and interactive buttons over a
+cropped castle garden, without mockup backing plates. New Game is always present;
+Back to Game appears only for an unfinished round or saved checkpoint, and takes
+no layout space when hidden. The eight-mode selection grid adapts to wide screens.
 Narrow screens use a compact portrait layout. Best Records and Privacy links
 have been removed; current-round scores and unfinished-game saves remain.
 
@@ -16,7 +18,7 @@ Publish the contents of this folder at the root of your repository. Keep all
 `index.*` filenames unchanged and include `.nojekyll`. In Settings → Pages,
 select **Deploy from a branch**, **main**, and **/ (root)**.
 
-Use GitHub Desktop or Git to upload: the game pack and WebAssembly module exceed
+Use GitHub Desktop or Git to upload: the WebAssembly module exceeds
 the GitHub browser uploader's 25 MiB per-file limit. Do not upload the ZIP itself
 as the website, and do not put `index.html` inside another folder.
 
