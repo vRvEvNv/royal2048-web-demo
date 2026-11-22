@@ -5,7 +5,8 @@ This demo has no advertising or in-app purchases.
 
 The landscape interface keeps the original portrait board in the center. Mode,
 score and countdown appear on the left; Home, Music and Sound remain on the
-right. The home screen and eight-mode selection grid also adapt to wide screens.
+right. The home screen centers a cropped castle garden behind the logo and stacked
+New Game / Back to Game buttons. The eight-mode selection grid adapts to wide screens.
 Narrow screens use a compact portrait layout. Best Records and Privacy links
 have been removed; current-round scores and unfinished-game saves remain.
 
@@ -35,3 +36,8 @@ Poki SDK integration has not been added.
 The Godot Engine license is in `GODOT_LICENSE.txt`. Font license texts are
 included in the game pack. The engine license does not license the game's
 artwork or other original content.
+
+This optimized build reduces the game pack to about 5.3 MB. In-game image
+resolutions are retained; unused artwork is excluded and large textures use
+high-quality compression. Home music uses a smaller stereo Vorbis stream;
+full track lengths, looping and lossless short sound effects are retained.
