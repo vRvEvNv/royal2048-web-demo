@@ -3,9 +3,11 @@
 A physics-based number-merging puzzle game with jelly pieces and eight game modes.
 This demo has no advertising or in-app purchases.
 
-On wide screens, the game stays in a centered portrait area, surrounded by a
-dark navy royal pattern and subtle gold trim. Narrow phone screens use the full
-available area. The surround uses embedded SVG/CSS and stays sharp when resized.
+The landscape interface keeps the original portrait board in the center. Mode,
+score and countdown appear on the left; Home, Music and Sound remain on the
+right. The home screen and eight-mode selection grid also adapt to wide screens.
+Narrow screens use a compact portrait layout. Best Records and Privacy links
+have been removed; current-round scores and unfinished-game saves remain.
 
 ## GitHub Pages
 
