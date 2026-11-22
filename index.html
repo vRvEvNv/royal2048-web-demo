@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="theme-color" content="#071222">
+	<title>ROYAL 2048 WEB</title>
+	<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+	<style>
+		:root { color-scheme: dark; --stage-width: 100vw; --stage-height: 100dvh; }
+		* { box-sizing: border-box; }
+		html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+		body {
+			background: #071222;
+			font-family: Georgia, 'Times New Roman', serif;
+			overscroll-behavior: none;
+		}
+		#surround {
+			position: fixed; inset: 0; pointer-events: none; overflow: hidden;
+			background:
+				radial-gradient(ellipse at 14% 35%, #19375588, transparent 48%),
+				radial-gradient(ellipse at 86% 35%, #19375588, transparent 48%),
+				linear-gradient(180deg, #12263d 0%, #0a192d 54%, #050c18 100%);
+		}
+		#surround::after {
+			content: ''; position: absolute; inset: 0;
+			background: radial-gradient(ellipse at center, transparent 25%, #03091499 100%);
+		}
+		.wallpaper { position: absolute; width: 100%; height: 100%; }
+		.side {
+			position: absolute; top: 0; bottom: 0;
+			width: max(0px, calc((100% - var(--stage-width)) / 2));
+			display: grid; place-items: center; overflow: hidden;
+		}
+		.side.left { left: 0; } .side.right { right: 0; }
+		.side::before {
+			content: ''; position: absolute; inset: 26px;
+			border: 1px solid #8395ab12;
+			background: linear-gradient(180deg, #c5ae6a06, transparent 20%, transparent 80%, #c5ae6a04);
+			border-radius: 48% 48% 10px 10px / 25% 25% 10px 10px;
+		}
+		.crest { width: min(62%, 240px); max-height: 70%; opacity: .52; }
+		#viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+		#game-stage {
+			position: relative; width: var(--stage-width); height: var(--stage-height);
+			background: #080f1a; isolation: isolate;
+		}
+		body.framed #game-stage {
+			border-radius: 13px;
+			box-shadow: 0 0 0 1px #d6bd7899, 0 0 0 5px #080e1d,
+				0 0 0 6px #7793ae29, 0 18px 70px 22px #0009;
+		}
+		body.framed #canvas { border-radius: 13px; }
+		body.framed #status { border-radius: 13px; }
+		#canvas { display: block; width: 100%; height: 100%; border: 0; outline: none; touch-action: none; }
+		#status {
+			position: absolute; inset: 0; display: grid; align-content: center;
+			justify-items: center; gap: 22px; padding: 28px;
+			background: radial-gradient(ellipse at 50% 30%, #193451, #080f1c 80%);
+			color: #ecdaac; text-align: center; z-index: 2;
+		}
+		#status[hidden] { display: none; }
+		.loading-crown { width: 70px; height: 52px; color: #ccaf6a; }
+		#status-label { margin: 0; font-size: clamp(18px, 4vw, 23px); letter-spacing: .16em; }
+		#status-progress {
+			appearance: none; width: min(78%, 250px); height: 7px; border: 0;
+			border-radius: 8px; overflow: hidden; background: #020917; accent-color: #c3a66a;
+		}
+		#status-progress::-webkit-progress-bar { background: #020917; border-radius: 8px; }
+		#status-progress::-webkit-progress-value { background: linear-gradient(90deg, #97733b, #f1d997); border-radius: 8px; }
+		#status-progress::-moz-progress-bar { background: #c3a66a; border-radius: 8px; }
+		#status-notice { margin: 0; font: 14px/1.6 system-ui, sans-serif; color: #c2ccda; overflow-wrap: anywhere; }
+		#retry { padding: 11px 28px; color: #f7e6be; border: 1px solid #b99a5c; border-radius: 8px; background: #19314d; cursor: pointer; }
+		noscript { position: fixed; inset: 30% 15%; color: #eee0bb; z-index: 10; text-align: center; }
+	</style>
+</head>
+<body>
+	<div id="surround" aria-hidden="true">
+		<svg class="wallpaper" xmlns="http://www.w3.org/2000/svg">
+			<defs>
+				<pattern id="royal-pattern" width="144" height="176" patternUnits="userSpaceOnUse">
+					<path d="M72 6 138 88 72 170 6 88Z" fill="none" stroke="#577494" stroke-opacity=".10"/>
+					<path d="M54 78 62 83 72 69 82 83 90 78 86 99H58Z M59 104H85" fill="none" stroke="#8ca4b8" stroke-opacity=".13" stroke-width="1.5" stroke-linejoin="round"/>
+					<path d="m0 82 5 6-5 6-5-6ZM144 82l5 6-5 6-5-6Z" fill="#baa170" fill-opacity=".12"/>
+				</pattern>
+				<symbol id="royal-crest" viewBox="0 0 240 410">
+					<path d="M120 16C96 44 55 65 32 83v155c0 69 48 114 88 146 40-32 88-77 88-146V83c-23-18-64-39-88-67Z" fill="#0e2337" fill-opacity=".6" stroke="#8399ae" stroke-opacity=".23"/>
+					<path d="M120 29c-25 26-51 42-75 61v146c0 60 40 103 75 131 35-28 75-71 75-131V90c-24-19-50-35-75-61Z" fill="none" stroke="#bda26b" stroke-opacity=".3"/>
+					<path d="m120 69 7 10-7 10-7-10ZM120 316l7 10-7 10-7-10Z" fill="#bda26b" fill-opacity=".4"/>
+					<path d="m77 173 21 13 22-31 22 31 21-13-9 56H86Z" fill="#294059" fill-opacity=".65" stroke="#d4ba7d" stroke-opacity=".6" stroke-width="2" stroke-linejoin="round"/>
+					<path d="M87 239h66M94 246h52" fill="none" stroke="#d4ba7d" stroke-opacity=".5" stroke-width="2"/>
+					<path d="m120 185 10 16-10 16-10-16Z" fill="#8197ae" fill-opacity=".35"/>
+					<circle cx="76" cy="171" r="4" fill="#bda26b" fill-opacity=".5"/>
+					<circle cx="120" cy="152" r="4" fill="#bda26b" fill-opacity=".5"/>
+					<circle cx="164" cy="171" r="4" fill="#bda26b" fill-opacity=".5"/>
+					<path d="M97 280c-24-8-39-36-39-62m85 62c24-8 39-36 39-62M65 250l-9-5-3-15 10 6m10 26-12-2-7-12 13 2m12 22-13 1-10-9 14-1m15 18-13 3-12-7 15-3M175 250l9-5 3-15-10 6m-10 26 12-2 7-12-13 2m-12 22 13 1 10-9-14-1m-15 18 13 3 12-7-15-3" fill="none" stroke="#8ca3b5" stroke-opacity=".4" stroke-linecap="round"/>
+					<path d="M87 123h66M104 117h32M90 295h60" stroke="#bda26b" stroke-opacity=".28"/>
+				</symbol>
+			</defs>
+			<rect width="100%" height="100%" fill="url(#royal-pattern)"/>
+		</svg>
+		<div class="side left"><svg class="crest" viewBox="0 0 240 410"><use href="#royal-crest"/></svg></div>
+		<div class="side right"><svg class="crest" viewBox="0 0 240 410"><use href="#royal-crest"/></svg></div>
+	</div>
+	<main id="viewport">
+		<div id="game-stage">
+			<canvas id="canvas" width="750" height="1334" tabindex="0" aria-label="ROYAL 2048 game">Your browser does not support canvas.</canvas>
+			<div id="status" role="status" aria-live="polite">
+				<svg class="loading-crown" viewBox="0 0 80 60" fill="none" aria-hidden="true"><path d="m8 16 16 9L40 5l16 20 16-9-7 34H15ZM17 56h46" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m40 23 6 9-6 9-6-9Z" fill="currentColor"/></svg>
+				<p id="status-label">ROYAL 2048</p>
+				<progress id="status-progress" aria-label="Loading game"></progress>
+				<p id="status-notice">Loading your kingdom…</p>
+				<button id="retry" hidden>Try again</button>
+			</div>
+		</div>
+	</main>
+	<noscript>Please enable JavaScript to play ROYAL 2048.</noscript>
+	<script src="index.js"></script>
+	<script>
+	'use strict';
+	const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":43811592,"index.wasm":38047590},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+	const GODOT_THREADS_ENABLED = false;
+	const canvas = document.getElementById('canvas');
+	const stage = document.getElementById('game-stage');
+	const status = document.getElementById('status');
+	const progress = document.getElementById('status-progress');
+	const notice = document.getElementById('status-notice');
+	const retry = document.getElementById('retry');
+	const referenceRatio = 750 / 1334;
+	function fitGame() {
+		const width = document.documentElement.clientWidth;
+		const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+		const wide = width / height > 0.70;
+		const framed = wide && width >= 700 && height >= 480;
+		const gameHeight = wide ? Math.min(height - (framed ? 32 : 0), 1334) : height;
+		const gameWidth = wide ? gameHeight * referenceRatio : width;
+		document.documentElement.style.setProperty('--stage-width', `${gameWidth}px`);
+		document.documentElement.style.setProperty('--stage-height', `${gameHeight}px`);
+		document.body.classList.toggle('framed', framed);
+		// Godot's automatic full-window sizing is disabled. Match the actual play
+		// area at Retina density; never stretch a landscape buffer into a portrait.
+		const density = Math.min(window.devicePixelRatio || 1, 2);
+		const bufferWidth = Math.max(1, Math.round(gameWidth * density));
+		const bufferHeight = Math.max(1, Math.round(gameHeight * density));
+		if (canvas.width !== bufferWidth) canvas.width = bufferWidth;
+		if (canvas.height !== bufferHeight) canvas.height = bufferHeight;
+	}
+	fitGame();
+	window.addEventListener('resize', fitGame);
+	window.visualViewport?.addEventListener('resize', fitGame);
+	document.addEventListener('fullscreenchange', fitGame);
+	// Re-evaluate Retina density when moving the window between displays.
+	let densityQuery;
+	function watchDensity() {
+		densityQuery?.removeEventListener('change', watchDensity);
+		densityQuery = matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+		densityQuery.addEventListener('change', watchDensity, {once: true});
+		fitGame();
+	}
+	watchDensity();
+	retry.addEventListener('click', () => window.location.reload());
+	function showFailure(error) {
+		console.error(error);
+		status.hidden = false;
+		progress.hidden = true;
+		notice.textContent = `The game could not start. ${error instanceof Error ? error.message : String(error)}`;
+		retry.hidden = false;
+	}
+	if (typeof Engine === 'undefined') {
+		showFailure('Please check your connection and try again.');
+	} else {
+		const engine = new Engine(GODOT_CONFIG);
+		const missing = Engine.getMissingFeatures({threads: GODOT_THREADS_ENABLED});
+		if (missing.length) {
+			showFailure(`Your browser needs: ${missing.join(', ')}.`);
+		} else {
+			engine.startGame({
+				canvas, canvasResizePolicy: 0,
+				onProgress(current, total) {
+					if (total > 0) { progress.max = total; progress.value = current; }
+					else progress.removeAttribute('value');
+				},
+			}).then(() => { fitGame(); status.hidden = true; }).catch(showFailure);
+		}
+	}
+	</script>
+</body>
+</html>
+
